@@ -25,8 +25,8 @@ from confluence_tools import CONFLUENCE_TOOLS
 from sharepoint_tools import SHAREPOINT_TOOLS
 from document_parser import DOCUMENT_PARSER_TOOLS
 
-# Import middleware
-from hitl_middleware import HumanInLoopMiddleware
+# Note: HITL functionality can be added by wrapping tools with approval checks
+# from hitl_middleware import request_approval
 
 # Import LLM configuration
 from llm_config import get_qwen_llm
@@ -196,18 +196,18 @@ def create_sharepoint_confluence_agent(
     # Combine all tools
     all_tools = CONFLUENCE_TOOLS + SHAREPOINT_TOOLS + DOCUMENT_PARSER_TOOLS
 
-    # Create middleware list
-    middleware = []
+    # Note: HITL is not currently enabled in this version
+    # You can add custom middleware or tool wrappers for human approval
     if enable_hitl:
-        middleware.append(HumanInLoopMiddleware())
-        print("✓ Human-in-the-loop enabled for destructive operations")
+        print("ℹ️  Note: HITL is not currently implemented")
+        print("   The agent will execute all operations without approval")
+        print("   To add HITL, wrap destructive tools with approval checks")
 
     # Create the agent
     agent = create_deep_agent(
         model=model,
         tools=all_tools,
         system_prompt=SYSTEM_PROMPT,
-        middleware=middleware if middleware else None,
     )
 
     return agent

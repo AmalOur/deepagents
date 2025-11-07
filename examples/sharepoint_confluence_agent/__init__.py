@@ -54,9 +54,7 @@ from .document_parser import (
 )
 
 from .hitl_middleware import (
-    HumanInLoopMiddleware,
-    SelectiveHITLMiddleware,
-    LoggingHITLMiddleware,
+    request_approval,
 )
 
 from .llm_config import (
@@ -95,10 +93,8 @@ __all__ = [
     "parse_document",
     "extract_text_from_document",
     "get_image_for_llm",
-    # Middleware
-    "HumanInLoopMiddleware",
-    "SelectiveHITLMiddleware",
-    "LoggingHITLMiddleware",
+    # HITL helpers
+    "request_approval",
     # LLM config
     "get_custom_llm",
     "get_qwen_llm",
