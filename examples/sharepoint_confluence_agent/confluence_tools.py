@@ -34,21 +34,35 @@ def confluence_search_content(
     Search for content in Confluence.
 
     Args:
-        query: Search query string (CQL or text search)
-        content_type: Type of content to search for
+        query: Search query string. Can be either:
+               - Simple text: "managed database"
+               - CQL query: "space=MYSPACE AND title~'database'"
+        content_type: Type of content to search for (page, blogpost, attachment, all)
         max_results: Maximum number of results to return (default: 10)
 
     Returns:
-        JSON string with search results including titles, IDs, and excerpts
+        Search results with titles, IDs, URLs, and excerpts
     """
     try:
         session, base_url = _get_confluence_session()
 
-        # Build CQL query
-        if content_type != "all":
-            cql = f"type={content_type} and text~'{query}'"
+        # Detect if query is CQL (contains CQL operators) or simple text
+        cql_indicators = [" AND ", " OR ", "type=", "space=", "title~", "text~", "creator="]
+        is_cql = any(indicator in query for indicator in cql_indicators)
+
+        if is_cql:
+            # Use query as-is (it's already CQL)
+            # Add type filter if specified and not already in query
+            if content_type != "all" and "type=" not in query:
+                cql = f"type={content_type} AND ({query})"
+            else:
+                cql = query
         else:
-            cql = f"text~'{query}'"
+            # Simple text search - build CQL
+            if content_type != "all":
+                cql = f"type={content_type} AND text~'{query}'"
+            else:
+                cql = f"text~'{query}'"
 
         params = {
             "cql": cql,
@@ -68,13 +82,17 @@ def confluence_search_content(
                 "type": item.get("type"),
                 "title": item.get("title"),
                 "space": item.get("space", {}).get("name"),
+                "space_key": item.get("space", {}).get("key"),
                 "url": f"{base_url}{item.get('_links', {}).get('webui', '')}",
                 "excerpt": item.get("excerpt", "")[:200],  # First 200 chars
             }
             results.append(result)
 
+        if not results:
+            return f"No results found for query: {query}"
+
         return f"Found {len(results)} results:\n" + "\n".join([
-            f"- [{r['title']}]({r['url']}) (ID: {r['id']}, Type: {r['type']}, Space: {r['space']})"
+            f"- [{r['title']}]({r['url']}) (ID: {r['id']}, Space: {r['space_key']})"
             for r in results
         ])
 
