@@ -16,9 +16,9 @@ def _get_confluence_session():
         raise ValueError("CONFLUENCE_URL and CONFLUENCE_PERSONAL_TOKEN must be set in environment")
 
     session = requests.Session()
-    # The token appears to be base64 encoded credentials
+    # Use Bearer authentication with the personal token
     session.headers.update({
-        "Authorization": f"Basic {token}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     })
     return session, url
