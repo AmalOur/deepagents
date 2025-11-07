@@ -72,6 +72,7 @@ def get_custom_llm(
         )
 
     # Create ChatOpenAI instance with custom configuration
+    # Configure for models that may not support full tool calling
     llm = ChatOpenAI(
         model=model_name,
         openai_api_base=api_base,
@@ -80,6 +81,10 @@ def get_custom_llm(
         max_tokens=max_tokens,
         # Add custom header for X-API-Key
         default_headers={"X-API-Key": api_key},
+        # Disable strict tool calling validation for compatibility
+        model_kwargs={
+            "tool_choice": "none",  # Don't force tool usage
+        }
     )
 
     return llm

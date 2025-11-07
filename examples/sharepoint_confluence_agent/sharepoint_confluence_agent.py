@@ -155,23 +155,26 @@ Now, help the user with their SharePoint and Confluence tasks!
 
 
 def create_sharepoint_confluence_agent(
-    use_custom_llm: bool = False,  # Changed default to False
+    use_custom_llm: bool = True,  # Changed to True - use Qwen by default
     enable_hitl: bool = True,
 ):
     """
     Create a SharePoint/Confluence DeepAgent.
 
     Args:
-        use_custom_llm: Whether to use the custom Qwen LLM (default: False)
-                       Note: Custom LLM must support tool calling. Use Claude by default.
+        use_custom_llm: Whether to use the custom Qwen LLM (default: True)
+                       Set to False to use Claude (requires ANTHROPIC_API_KEY)
         enable_hitl: Whether to enable human-in-the-loop for destructive operations (default: True)
 
     Returns:
         Configured DeepAgent instance
 
     Example:
-        # Create agent with default Claude model
+        # Create agent with Qwen model (default)
         agent = create_sharepoint_confluence_agent()
+
+        # Or use Claude (requires API key)
+        agent = create_sharepoint_confluence_agent(use_custom_llm=False)
 
         # Run the agent
         config = {"configurable": {"thread_id": "1"}}
@@ -185,15 +188,16 @@ def create_sharepoint_confluence_agent(
     if use_custom_llm:
         try:
             model = get_qwen_llm()
-            print("✓ Using custom Qwen LLM")
-            print("⚠️  Warning: Custom LLM may not support tool calling")
+            print("✓ Using Qwen LLM (Qwen/QVQ-72B-Preview)")
+            print("ℹ️  Note: Using simplified tool interface")
         except ValueError as e:
-            print(f"✗ Error loading custom LLM: {e}")
-            print("  Falling back to default Claude model")
+            print(f"✗ Error loading Qwen LLM: {e}")
+            print("  Set LLM_MODEL_NAME, LLM_API_BASE, and LLM_API_KEY in .env")
+            print("  Falling back to default Claude model (requires ANTHROPIC_API_KEY)")
             model = None  # Will use default
     else:
         model = None  # Use default Claude model
-        print("✓ Using default Claude model (recommended)")
+        print("✓ Using Claude model (requires ANTHROPIC_API_KEY)")
 
     # Combine all tools
     all_tools = CONFLUENCE_TOOLS + SHAREPOINT_TOOLS + DOCUMENT_PARSER_TOOLS
