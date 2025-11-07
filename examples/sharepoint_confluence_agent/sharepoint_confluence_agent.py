@@ -155,22 +155,22 @@ Now, help the user with their SharePoint and Confluence tasks!
 
 
 def create_sharepoint_confluence_agent(
-    use_custom_llm: bool = True,
+    use_custom_llm: bool = False,  # Changed default to False
     enable_hitl: bool = True,
 ):
     """
     Create a SharePoint/Confluence DeepAgent.
 
     Args:
-        use_custom_llm: Whether to use the custom Qwen LLM (default: True)
-                       If False, uses the default Claude model
+        use_custom_llm: Whether to use the custom Qwen LLM (default: False)
+                       Note: Custom LLM must support tool calling. Use Claude by default.
         enable_hitl: Whether to enable human-in-the-loop for destructive operations (default: True)
 
     Returns:
         Configured DeepAgent instance
 
     Example:
-        # Create agent with custom LLM and HITL
+        # Create agent with default Claude model
         agent = create_sharepoint_confluence_agent()
 
         # Run the agent
@@ -186,12 +186,14 @@ def create_sharepoint_confluence_agent(
         try:
             model = get_qwen_llm()
             print("✓ Using custom Qwen LLM")
+            print("⚠️  Warning: Custom LLM may not support tool calling")
         except ValueError as e:
             print(f"✗ Error loading custom LLM: {e}")
-            print("  Falling back to default model")
+            print("  Falling back to default Claude model")
             model = None  # Will use default
     else:
-        model = None  # Use default
+        model = None  # Use default Claude model
+        print("✓ Using default Claude model (recommended)")
 
     # Combine all tools
     all_tools = CONFLUENCE_TOOLS + SHAREPOINT_TOOLS + DOCUMENT_PARSER_TOOLS
